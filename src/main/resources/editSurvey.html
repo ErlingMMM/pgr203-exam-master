@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/editSurvey.css" />
+  </head>
+  <body onload="cookieUserLogin()">
+    <div id="root"></div>
+    <div id="loggedIn">Not logged in</div>
+  </body >
+
+  <script>
+    const loggedIn = document.getElementById("loggedIn");
+    const rootElement = document.querySelector("#root");
+    const urlParams = new URLSearchParams(window.location.search);
+    const surveyId = urlParams.get("id");
+
+    fetch(`/api/editSurvey?id=${surveyId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        renderHeader(data);
+        renderSurveyInfo(data);
+        renderQuestions(data);
+      });
+
+    const renderHeader = (data) => {
+      const header = document.createElement("div");
+      header.classList.add("header");
+      header.innerHTML = `
+        <h1>Editing survey: "${data.surveyName}"</h1>
+        `;
+      rootElement.append(header);
+    };
+
+    const renderSurveyInfo = (data) => {
+      const surveyInfo = document.createElement("form");
+      surveyInfo.classList.add("surveyInfoForm");
+
+      const surveyName = document.createElement("div");
+      surveyName.classList.add("surveyName");
+      surveyName.innerHTML = `
+        <label for="surveyName">Survey name:</label>
+        <input type="text" name="surveyName" value="${data.surveyName}" />
+        `;
+      surveyInfo.append(surveyName);
+
+      const surveyDescription = document.createElement("div");
+      surveyDescription.classList.add("surveyDescription");
+      surveyDescription.innerHTML = `
+        <label for="surveyDescription">Survey description:</label>
+        <textarea name="surveyDescription" rows="4" cols="50">${data.surveyDescription}</textarea>
+        `;
+      surveyInfo.append(surveyDescription);
+
+      const submitBtn = document.createElement("button");
+      submitBtn.classList.add("submitBtn");
+      submitBtn.onclick = handleSurveyInfoSubmit;
+      submitBtn.innerHTML = "Submit";
+      surveyInfo.append(submitBtn);
+      rootElement.append(surveyInfo);
+    };
+
+    const handleSurveyInfoSubmit = (e) => {
+      console.log("submit");
+      e.preventDefault();
+      const formData = new FormData(document.querySelector(".surveyInfoForm"));
+      console.log(formData);
+      const surveyName = formData.get("surveyName");
+      const surveyDescription = formData.get("surveyDescription");
+      const surveyId = urlParams.get("id");
+
+      fetch(`/api/updateSurveyValues`, {
+        method: "PUT",
+        body: JSON.stringify({
+          surveyName,
+          surveyDescription,
+          surveyId,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((response) => console.log(response));
+    };
+
+    const renderQuestions = (data) => {
+      const questions = document.createElement("form");
+      questions.classList.add("questions");
+      questions.id = "questionsForm";
+
+      const questionList = data.questions;
+      questionList.forEach((question) => {
+        const questionDiv = document.createElement("div");
+        questionDiv.classList.add("question");
+
+        const questionTitle = document.createElement("div");
+        questionTitle.classList.add("questionTitle");
+        questionTitle.innerHTML = `
+          <label for="q-${question.questionId}">Question title:</label>
+          <input type="text" name="q-${question.questionId}" value="${question.questionTitle}" />
+          `;
+        questionDiv.append(questionTitle);
+
+        const answerList = question.answers;
+        const answerListElement = document.createElement("div");
+        answerList.forEach((answer) => {
+          const answerDiv = document.createElement("div");
+          answerDiv.classList.add("answer");
+
+          const answerText = document.createElement("div");
+          answerText.classList.add("answerText");
+          answerText.innerHTML = `
+            <label for="q${answer.questionId}-a${answer.answerId}">Answer option:</label>
+            <input type="text" name="q${answer.questionId}-a${answer.answerId}" value="${answer.answerText}" />
+            `;
+          answerDiv.append(answerText);
+          answerListElement.append(answerDiv);
+        });
+        questionDiv.append(answerListElement);
+        questions.append(questionDiv);
+      });
+      const submitBtn = document.createElement("button");
+      submitBtn.classList.add("questionsSubmitBtn");
+      submitBtn.innerText = "Submit Changes";
+      submitBtn.onclick = handleQuestionsSubmit;
+      questions.append(submitBtn);
+      rootElement.append(questions);
+    };
+
+    const handleQuestionsSubmit = (e) => {
+      console.log("submit");
+      e.preventDefault();
+      const formData = new FormData(document.querySelector("#questionsForm"));
+
+      const survey = {};
+      formData.forEach((value, key) => {
+        survey[key] = value;
+      });
+
+      fetch("/api/updateSurveyValues", {
+        method: "PUT",
+        body: JSON.stringify(survey),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((response) => console.log(response));
+    };
+
+
+    function getCookie(cname) {
+      let name = cname + "=";
+      let decodedCookie = decodeURIComponent(document.cookie);
+      let ca = decodedCookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+
+
+    function cookieUserLogin() {
+      let userCookie = getCookie("username");
+      if(userCookie!==""){
+        loggedIn.innerHTML = `${userCookie}`;
+      }
+    }
+
+  </script>
+</html>

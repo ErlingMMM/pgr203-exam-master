@@ -1,0 +1,78 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.header {
+  width: 100%;
+  height: fit-content;
+  padding: 10px;
+  background-color: #f1f1f1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+.surveyInfoForm {
+  width: 50%;
+  height: fit-content;
+  padding: 10px;
+  background-color: #f1f1f1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4rem;
+}
+.surveyName {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.surveyName input {
+  margin-top: 0.5rem;
+  padding: 5px;
+}
+.surveyDescription {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.surveyDescription textarea {
+  margin-top: 0.5rem;
+  padding: 5px;
+}
+.questions {
+  width: 50%;
+  margin-top: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f1f1f1;
+}
+.question {
+  margin-bottom: 1rem;
+  background-color: #f1f1f1;
+  padding: 10px;
+}
+.questionTitle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.questionTitle input {
+  width: 100%;
+}

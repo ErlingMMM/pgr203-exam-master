@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Title</title>
+    <link rel="stylesheet" href="./css/takeSurvey.css" />
+  </head>
+  <body onload="cookieUserLogin()">
+    <div id="root"></div>
+    <div id="loggedIn">Not logged in</div>
+
+  </body>
+
+  <script>
+
+    const loggedIn = document.getElementById("loggedIn");
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    fetch(`/api/takeSurvey?id=${urlParams.get("id")}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        renderHeader(data);
+        renderQuestions(data);
+      });
+
+    const root = document.querySelector("#root");
+
+    // grab value from form and send to server
+    const submitForm = (e) => {
+      e.preventDefault();
+      const form = document.getElementById("question-form");
+      console.log(form);
+      const formData = new FormData(form);
+      const formDataJson = {};
+      for (const [key, value] of formData.entries()) {
+        formDataJson[key] = value;
+      }
+
+      // Working on editing const formData, adding user id and survey data to correct indexes
+
+      const dataObject = {
+        userEmail: getCookie("userEmail"),
+        surveyId: urlParams.get("id"),
+        data: formDataJson,
+      };
+      console.log(formDataJson);
+      fetch(`/api/userSurvey`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataObject),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          if (data.success) {
+            window.location.href = "/index.html";
+          }
+        });
+    };
+
+    const renderOptions = (data, questionType, questionId) => {
+      const answers = data.answers;
+      if (questionType === "1") {
+        const radioDiv = document.createElement("div");
+        answers.forEach((option) => {
+          const optionDiv = document.createElement("div");
+          optionDiv.classList.add("option");
+          const radioButton = document.createElement("input");
+          optionDiv.innerHTML = `
+                <label for="userAnswer-q${questionId}-a${option.answerId}">${option.answerText}</label>
+                <input type="radio" name="userAnswer-q${questionId}-a${option.answerId}"></input>
+                `;
+          radioDiv.appendChild(optionDiv);
+        });
+        return radioDiv;
+      } else if (questionType === "2") {
+        const checkboxDiv = document.createElement("div");
+        answers.forEach((option) => {
+          const optionDiv = document.createElement("div");
+          optionDiv.classList.add("option");
+          optionDiv.innerHTML = `
+                <label for="userAnswer-q${questionId}-a${option.answerId}">${option.answerText}</label>
+                <input type="checkbox" name="userAnswer-q${questionId}-a${option.answerId}"></input>
+                `;
+          checkboxDiv.appendChild(optionDiv);
+        });
+        return checkboxDiv;
+      } else if (questionType === "3") {
+        const optionDiv = document.createElement("div");
+        let min = answers[0].answerText.substring(
+          answers[0].answerText.indexOf(":")+1,
+          answers[0].answerText.indexOf("x")-3
+        );
+        let max = answers[0].answerText.substring(
+          answers[0].answerText.indexOf(" " + 1, 5)
+        );
+        optionDiv.classList.add("optionScale");
+        optionDiv.innerHTML = `
+                <label for="userAnswer-q${questionId}-a${answers[0].answerId}">Add a value between ${min} & ${max}</label>
+                <input type="range" min="${min} max="${max}" name="userAnswer-q${questionId}-a${answers[0].answerId}"></input>
+          `;
+
+        return optionDiv;
+      } else if (questionType === "4") {
+        const optionDiv = document.createElement("div");
+        optionDiv.classList.add("option");
+        const maxChar = answers[0].answerText.substring(
+          answers[0].answerText.indexOf(" ") + 1
+        );
+        optionDiv.classList;
+        optionDiv.innerHTML = `
+        <label for="userAnswer-q${questionId}-a${answers[0].answerId}">Enter your answer (Max characters: ${maxChar})</label>
+        <textarea type="text" name="userAnswer-q${questionId}-a${answers[0].answerId}"></textarea>
+        `;
+        return optionDiv;
+      } else {
+        console.log("error");
+      }
+    };
+
+    const renderQuestions = (data) => {
+      const questions = data.questions;
+      const questionContainer = document.createElement("form");
+      questionContainer.classList.add("question-form");
+      questionContainer.setAttribute("id", "question-form");
+      questions.forEach((questionInstance) => {
+        const questionElement = document.createElement("div");
+        questionElement.classList.add("question");
+        questionElement.innerHTML = `
+          <div class="question-title">
+            <h3>${questionInstance.questionText}</h3>
+          </div>
+        `;
+        questionContainer.appendChild(questionElement);
+        const questionOptionContainer = document.createElement("div");
+        questionOptionContainer.classList.add("question-option-container");
+        questionOptionContainer.appendChild(
+          renderOptions(questionInstance, questionInstance.questionType, questionInstance.questionId)
+        );
+        questionElement.appendChild(questionOptionContainer);
+      });
+      const submitBtn = document.createElement("button");
+      submitBtn.classList.add("submit-btn");
+      submitBtn.innerHTML = "Submit survey entry";
+      submitBtn.addEventListener("click", submitForm);
+      questionContainer.appendChild(submitBtn);
+      root.appendChild(questionContainer);
+    };
+
+    const renderHeader = (data) => {
+      const header = document.createElement("div");
+      header.classList.add("header");
+      header.innerHTML = `
+            <h1>${data.surveyName}</h1>
+            <h3>${data.surveyDescription}</h3>
+            `;
+      root.appendChild(header);
+    };
+
+
+
+    function getCookie(cname) {
+      let name = cname + "=";
+      let decodedCookie = decodeURIComponent(document.cookie);
+      let ca = decodedCookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+
+
+    function cookieUserLogin() {
+      let userCookie = getCookie("username");
+      if(userCookie!==""){
+        loggedIn.innerHTML = `${userCookie}`;
+      }
+    }
+
+
+  </script>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SuchSurvey</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <link rel="stylesheet" href=css/index.css>
+</head>
+<body onload="checkCookie()">
+
+<main class="main">
+    <div class="inner-container" id="inner-container">
+        <div id="navbar" class="navbar">
+            <div></div>
+            <h1>Surveys</h1>
+
+            <button onclick="newSurveyHref()" id="add-btn">+</a></button>
+            <div class="logInToAnswerMsg" id="logInToAnswerMsg">You need to log in to create new survey</div>
+        </div>
+    </div>
+    <div class="survey-list">
+        <h1>List of surveys:</h1>
+
+        <div id="listSurvey"></div>
+
+        <button onClick="sortAlphabeticallyByTitle()" class="sortingBtnStyle">
+            Sort alphabetically <i>(Asc/Desc)</i>
+        </button>
+    </div>
+    <div class="filter-survey-form">
+        <form method="post">
+            <p>
+                Filter survey by keyword: <br/><label>
+                <input placeholder="keyword" type="text" id="filter-input"/>
+            </label>
+            </p>
+            <button id="filterSubmitBtn">Submit</button>
+        </form>
+    </div>
+
+
+    <form method="post" class="loginForm">
+        <div id="login-msg" class="login-msg">Please write existing user credentials to create new survey</div>
+        <p>
+            Mail address: <br/><label>
+            <input
+                    title="Please login"
+                    id="user-input-mail"
+                    type="text"
+                    placeholder="registered mail"
+            />
+        </label>
+        </p>
+        <button id="loginSubmitBtn">Log me in:</button>
+    </form>
+
+    <div class="logOutBtn" id="logOut">Not logged in</div>
+
+    <div class="userCredentials" id="userCredentials"></div>
+
+    <div class="create-user">
+
+
+        <form id="createUserForm" method="post">
+            <h3>New user:<br/></h3>
+            <p>
+                First name: <br/><label>
+                <input placeholder="first name" type="text" name="firstName"/>
+            </label>
+            </p>
+            <p>
+                Last name: <br/><label>
+                <input placeholder="last name" type="text" name="lastName"/>
+            </label>
+            </p>
+            <p>
+                Email: <br/><label>
+                <input placeholder="email" type="text" name="email"/>
+            </label>
+            </p>
+            <button id="createNewUser" type="submit">Submit</button>
+        </form>
+    </div>
+
+
+</main>
+
+
+<script>
+
+
+    /*********
+     *
+     *  D.O.M'S
+     */
+    const filterSubBtn = document.getElementById("filterSubmitBtn");
+    const loginSubBtn = document.getElementById("loginSubmitBtn");
+    const createNewUser = document.getElementById("createNewUser");
+    let userElement = document.createElement("div");
+    let loginMsg = document.getElementById("login-msg");
+    let disableBtn = document.getElementById("add-btn").disabled = true;
+    let greyBtn = document.getElementById("add-btn").style.color = "grey";
+    let logInToAnswerMsg = document.getElementById("logInToAnswerMsg");
+    let logOut = document.getElementById("logOut");
+
+    /*********
+     *
+     *  Global variables
+     */
+
+    let userCookieEmail = getCookie("userEmail");
+    let userCookie = getCookie("username");
+    let isEmailTyped = false;
+
+    /*********
+     *
+     *  Cookies
+     */
+    function checkCookie() {
+        cookieUserLogin();
+        acceptCookies();
+    }
+
+    function setCookie(cname, cvalue, exdays) {
+        const d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        let expires = "expires=" + d.toGMTString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+    function acceptCookies() {
+        let accept = getCookie("accepted");
+        if (accept === "yes") {
+            console.log("cookies accepted")
+        } else {
+            setTimeout(delayConfirm, 800);
+
+            function delayConfirm() {
+                if (confirm('Do you accept cookies? (Clicking yes will prevent this button from re entering)')) {
+
+                    accept = "yes";
+                }
+                if (accept !== "") {
+                    setCookie("accepted", accept, 30);
+                }
+            }
+        }
+    }
+
+    function cookieUserLogin() {
+        let userCookie = getCookie("username");
+        if (userCookie !== "") {
+            userElement = document.createElement("div");
+            const userCredentialsInCookie = document.querySelector("#userCredentials")
+
+            userElement.innerHTML = `${userCookie}`;
+            userCredentialsInCookie.append(userElement)
+            document.getElementById("login-msg").style.visibility = "hidden";
+            document.getElementById("logInToAnswerMsg").style.visibility = "hidden";
+            disableBtn = document.getElementById("add-btn").disabled = false;
+            let styleOnNewSurveyBtn = document.getElementById("add-btn").style.color = "blue";
+            logOut.innerHTML = `<button class="logOutBtn" onclick="logOutBtn()">Log out ${userCookieEmail}</button>`
+        }
+    }
+
+
+    /*********
+     *
+     *  Login
+     */
+
+
+    function logOutBtn() {
+        userCookieEmail = "";
+        userCookie = "";
+        setCookie("username", userCookie, 30);
+        setCookie("userEmail", userCookieEmail, 30);
+        window.location.reload()
+    }
+
+    loginSubBtn.onclick = (e) => {
+        e.preventDefault();
+        const userInputMail = document.getElementById("user-input-mail").value;
+
+        fetch("/api/printUserName", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+                userInputMail: userInputMail,
+            }),
+        }).then((res) => {
+            res.json().then((data) => {
+                console.log(data);
+                const userCredentialsContainer = document.querySelector("#userCredentials");
+                let filterResults = document.createElement("div");
+                data.login.forEach((user) => {
+                    userElement = document.createElement("div");
+                    userElement.classList.add("user");
+                    if (userInputMail === `${user.logInMailOutput}`) {
+                        isEmailTyped = true;
+                        userElement.innerHTML = `
+                <h2>Hello ${user.logInFirstName}</h2>
+                <p>${user.logInLastName}</p>
+                <p>${user.logInMailOutput}</p>
+
+
+                `;
+                        filterResults.append(userElement);
+                        if (userCookie !== "") {
+                            console.log("userCookie not empty")
+                        } else {
+                            userCookie = `<h2>Hello ${user.logInFirstName}</h2> <p>${user.logInLastName}</p>
+                <p>${user.logInMailOutput}</p>`;
+                            userCookieEmail = `${user.logInMailOutput}`;
+                            if (userCookie !== "" && userCookie != null) {
+                                setCookie("username", userCookie, 30);
+                                setCookie("userEmail", userCookieEmail, 30);
+                            }
+                        }
+                    }
+                });
+                if (!isEmailTyped) {
+                    loginMsg.innerHTML = "Not valid email";
+                } else {
+                    isEmailTyped = false; //Reset boolean to global value in case user double clicks to prevent change of innerHTML
+                    loginMsg.innerHTML = "";
+                    window.location.reload() //Yes. This annoying thing needs to be here for now. Page needs to refresh so to enable newSurveyBtn
+                }
+                userCredentialsContainer.replaceChildren(filterResults);
+            });
+        });
+    };
+
+
+    /*********
+     *
+     *  Filter surveys
+     */
+
+    filterSubBtn.onclick = (e) => {
+        e.preventDefault();
+        const filterInput = document.getElementById("filter-input").value;
+
+        fetch("/api/filterSurvey", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+                filterInput: filterInput,
+            }),
+        }).then((res) => {
+            res.json().then((data) => {
+                console.log(data);
+                const surveyContainer = document.querySelector("#listSurvey");
+                let filterResults = document.createElement("div");
+                data.surveys.forEach((survey) => {
+                    const surveyElement = document.createElement("div");
+                    surveyElement.classList.add("survey");
+
+                    surveyElement.innerHTML = `
+                <h2>${survey.name}</h2>
+                <p>${survey.description}</p>
+                <p>${survey.userEmail}</p>
+                <a href="/takeSurvey.html?id=${survey.id}">
+                    <button>Take survey</button>
+                </a>
+               `;
+                    filterResults.append(surveyElement);
+                });
+                surveyContainer.replaceChildren(filterResults);
+            });
+        });
+    };
+
+
+    /*********
+     *
+     *  Fetch
+     */
+
+    createNewUser.onclick = (e) => {
+        e.preventDefault();
+        const formData = new FormData(document.querySelector("#createUserForm"));
+        const firstName = formData.get("firstName");
+        const lastName = formData.get("lastName");
+        const email = formData.get("email");
+        fetch("/api/newUser", {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+                firstName: firstName,
+                lastName: lastName,
+                email: email
+            })
+
+        })
+            .then(function (res) {
+                if (res.status === 200) {
+                    createNewUser.innerText = "success"
+                    const newUserSuccess = document.getElementById("createNewUser").style.color = "green"
+                }
+            })
+    }
+
+
+    fetch("/api/listSurvey")
+        .then(function (res) {
+            return res.text();
+        })
+        .then(function (text) {
+            document.getElementById("listSurvey").innerHTML = text;
+        });
+
+    const sortAlphabeticallyByTitle = () => {
+        fetch("/api/listSurvey")
+            .then(function (res) {
+                return res.text();
+            })
+            .then(function (text) {
+                document.getElementById("listSurvey").innerHTML = text;
+            });
+    };
+
+
+    /*********
+     *
+     *  Window location
+     */
+
+   const takeSurvey = (id) => {
+        if(userCookie === ""){
+            alert("please log in")
+        }else{
+            window.location.href = `/takeSurvey.html?id=${id}`;
+        }
+
+    };
+
+    const editSurvey = (id) => {
+        window.location.href = `/editSurvey.html?id=${id}`;
+    };
+
+    const seeSurveyAnswers = (id) => {
+        window.location.href = `/seeSurveyAnswers.html?id=${id}`;
+    };
+
+    function newSurveyHref() {
+        window.location.href = `/newSurvey.html`;
+    }
+
+
+</script>
+</body>
+</html>

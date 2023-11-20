@@ -1,0 +1,154 @@
+
+#add-btn {
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+body {
+    background-color: red;
+}
+
+#add-btn:hover {
+    transform: scale(0.95);
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 10vh;
+    width: 100%;
+    background-color: lightseagreen;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.inner-container {
+    background-color: lightblue;
+    height: 95%;
+    width: 95%;
+    display: flex;
+    justify-content: center;
+}
+
+.main {
+    height: 100vh;
+    width: 100vw;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+body {
+    background-color: white;
+}
+
+.survey-list {
+    position: absolute;
+    text-align: center;
+    top: 200px;
+    font-size: large;
+}
+
+.survey {
+    cursor: pointer;
+    background: darkred;
+}
+
+.survey p {
+    cursor: pointer;
+    background: blue;
+    color: white;
+}
+
+.survey:hover {
+    transform: scale(.95);
+}
+
+
+.sortingBtnStyle {
+    position: absolute;
+    border: none;
+    background-color: #50343a;
+    color: white;
+    padding: 17px;
+    width: auto;
+    cursor: pointer;
+    border-radius: 7px;
+    top: -60px;
+    left: 20px;
+    font-size: 20px;
+    z-index: 2;
+}
+
+.sortingBtnStyle:hover {
+    background: lightskyblue;
+    color: lightcoral;
+}
+
+i {
+    font-size: 15px;
+}
+
+
+.filter-survey-form {
+    position: absolute;
+    left: 50px;
+}
+
+.create-user {
+    position: absolute;
+    bottom: 480px;
+    left: 50px;
+}
+
+.login-msg {
+    color: yellow;
+}
+
+.see-answers-btn {
+    background-color: blue;
+    color: white;
+    cursor: pointer;
+    transition: .2s ease-in-out;
+}
+
+.see-answers-btn:hover {
+    transform: scale(0.95);
+}
+
+
+.userCredentials {
+    position: absolute;
+    top: 10px;
+    right: 400px;
+}
+
+
+.loginForm{
+    position: absolute;
+    bottom: 200px;
+    left: 50px;
+}
+
+.logOutBtn{
+    position: absolute;
+    bottom: 60px;
+    left: 50px;
+}
+
+.logInToAnswerMsg{
+    position: absolute;
+    top: 120px;
+    right: 50px;
+    color: darkred;
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body onload="cookieUserLogin()">
+    <div id="root"></div>
+    <div id="loggedIn">Not logged in</div>
+    <script>
+      const loggedIn = document.getElementById("loggedIn");
+      const urlParams = new URLSearchParams(window.location.search);
+
+      fetch(`/api/seeUserEntry?id=${urlParams.get("id")}`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          renderSurvey(data);
+        });
+
+      const renderSurvey = (data) => {
+        const root = document.getElementById("root");
+        const survey = document.createElement("div");
+        survey.classList.add("survey");
+        const title = document.createElement("h1");
+        title.innerText = `Showing userEntry: ${data.UserSurveyId} for survey with id: ${data.SurveyId}`;
+        survey.appendChild(title);
+
+        const questionsArray = data.questions;
+        const questions = document.createElement("div");
+        questions.classList.add("questions");
+        questionsArray.forEach((question) => {
+          const questionDiv = document.createElement("div");
+          questionDiv.classList.add("question");
+          const questionTitle = document.createElement("h2");
+          questionTitle.innerText = question.questionTitle;
+          questionDiv.appendChild(questionTitle);
+          const answers = document.createElement("div");
+          answers.classList.add("answers");
+          for (i = 0; i < question.UserAnswer.length; i++) {
+            const answerDiv = document.createElement("div");
+            answerDiv.classList.add("answer");
+            const answerTitle = document.createElement("h3");
+            answerTitle.innerText = question.UserAnswer[i];
+            answerDiv.appendChild(answerTitle);
+            answers.appendChild(answerDiv);
+          }
+          questionDiv.appendChild(answers);
+          questions.appendChild(questionDiv);
+        });
+        survey.appendChild(questions);
+        root.appendChild(survey);
+      };
+
+
+
+      function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+
+
+      function cookieUserLogin() {
+        let userCookie = getCookie("username");
+        if(userCookie!==""){
+          loggedIn.innerHTML = `${userCookie}`;
+        }
+      }
+
+    </script>
+  </body>
+</html>

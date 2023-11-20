@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="css/seeSurveyAnswers.css" rel="stylesheet" />
+    <title>Document</title>
+  </head>
+  <body onload="cookieUserLogin()">
+
+    <div class="root"></div>
+    <div id="loggedIn">Not logged in</div>
+    <script>
+      const loggedIn = document.getElementById("loggedIn");
+      const urlParams = new URLSearchParams(window.location.search);
+
+      fetch(`/api/seeSurveyAnswers?id=${urlParams.get("id")}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          renderHeader(data);
+          renderUserEntries(data);
+        });
+
+      const renderHeader = (data) => {
+        const header = document.createElement("h1");
+        header.innerText = `Showing all user entries of survey with id: ${urlParams.get("id")}`;
+        document.querySelector(".root").appendChild(header);
+      };
+
+      const renderUserEntries = (data) => {
+        const userEntries = document.createElement("div");
+        const entries = data.entries
+
+        entries.forEach((entry) => {
+          const entryDiv = document.createElement("div");
+          entryDiv.classList.add("entry");
+          entryDiv.onclick = () => {
+            window.location.href = `/seeUserEntry.html?id=${entry.id}`;
+          };
+          entryDiv.innerText = `${entry.id} - Created at:${entry.createdAt} Created by: ${entry.userEmail}`;
+          userEntries.appendChild(entryDiv);
+        });
+        document.querySelector(".root").appendChild(userEntries);
+
+      }
+
+
+      function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+
+
+      function cookieUserLogin() {
+        let userCookie = getCookie("username");
+        if(userCookie!==""){
+          loggedIn.innerHTML = `${userCookie}`;
+        }
+      }
+
+    </script>
+  </body>
+</html>

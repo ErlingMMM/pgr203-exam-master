@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Document</title>
+    <link rel="stylesheet" href="css/newSurvey.css"/>
+</head>
+<body onload="cookieUserLogin()">
+<nav class="navbar">
+    <h1>Create a new survey</h1>
+</nav>
+<main class="main">
+    <form method="post" class="survey-form" accept-charset="utf-8">
+        <div class="survey-specs">
+            <input
+                    type="text"
+                    name="survey-title"
+                    id="survey-title"
+                    placeholder="Enter the survey title"
+                    required
+            />
+            <textarea
+                    name="survey-description"
+                    id="survey-description"
+                    placeholder="What is the survey about?"
+                    required
+            ></textarea>
+        </div>
+
+        <div class="question-list"></div>
+        <button id="add-question-button">Add new question</button>
+        <button id="submit-survey-button">Submit</button>
+    </form>
+    <div class="submitMsg" id="submitMsg">
+        Please make a survey. This webpage in under development. Don't use '?'
+        or ',', please.
+    </div>
+
+
+    <div id="loggedIn">Not logged in</div>
+</main>
+</body>
+
+<script>
+
+
+    const loggedIn = document.getElementById("loggedIn");
+    const submitMsg = document.getElementById("submit-msg");
+    const addQuestionButton = document.getElementById("add-question-button");
+    const questionList = document.querySelector(".question-list");
+    let userCookieEmail = getCookie("userEmail");
+    const userCookie = getCookie("username");
+
+
+    // add a new question
+    addQuestionButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        const newQuestion = document.createElement("div");
+        newQuestionId = "q" + (questionList.childElementCount + 1);
+        newQuestion.id = newQuestionId;
+        newQuestion.classList.add("survey-question");
+        newQuestion.innerHTML = `
+            <input
+              type="text"
+              name="${newQuestionId}-title"
+              class="survey-question-title"
+              id="${newQuestionId}-title"
+              placeholder="Question"
+              required
+            />
+            <label for="${newQuestionId}-type">Answer type</label>
+            <select id="${newQuestionId}-type" class="survey-question-type" name="${newQuestionId}-type"></select>
+            <button id="${newQuestionId}-add-answer" class="add-answer-btn">
+              Add answers
+            </button>
+            <div class="answer-list" id="${newQuestionId}-answer-list"></div>
+      `;
+        questionList.appendChild(newQuestion);
+        const addAnswerButton = document.getElementById(
+            `${newQuestionId}-add-answer`
+        );
+        const answerList = document.querySelector(
+                `#${newQuestionId}-answer-list`
+        );
+        fillQuestionTypes(newQuestionId);
+
+        //Add answer
+        addAnswerButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            const selectElement = document.querySelector(`#${newQuestionId}-type`);
+            const parentQuestion = document.querySelector(`#${newQuestionId}`);
+            if (answerList.childElementCount >= 5) {
+                alert("You can only add 5 answers");
+            } else if (selectElement.value === "4") {
+                const newAnswer = document.createElement("div");
+                newAnswer.classList.add("survey-answer");
+                let newAnswerId = `${parentQuestion.id}-a${answerList.childElementCount}`;
+                newAnswer.innerHTML = `
+            <label for="${newAnswerId}-text">Text answer</label>
+            <input
+              type="number"
+              name="${newAnswerId}-text"
+              class="survey-answer-text"
+              id="${newAnswerId}-text"
+              placeholder="Max characters in answer?"
+              required
+            />`;
+                answerList.appendChild(newAnswer);
+            } else if (selectElement.value === "3") {
+                console.log("Adding scale answer");
+                const newAnswer = document.createElement("div");
+                newAnswer.classList.add("question-answer");
+                let newAnswerId = `${parentQuestion.id}-a${answerList.childElementCount}`;
+                newAnswer.id = newAnswerId;
+                newAnswer.innerHTML = `
+            <input
+              type="number"
+              name="${newAnswerId}-min"
+              class="survey-answer-scale"
+              id="${newAnswerId}-min"
+              placeholder="Min"
+              required
+            />
+            <input
+              type="number"
+              name="${newAnswerId}-max"
+              class="survey-answer-scale"
+              id="${newAnswerId}-max"
+              placeholder="Max"
+              required
+            />`;
+                answerList.appendChild(newAnswer);
+            } else {
+                const newAnswer = document.createElement("div");
+                newAnswer.classList.add("question-answer");
+                let newAnswerId = `${parentQuestion.id}-a${answerList.childElementCount}`;
+                newAnswer.id = newAnswerId;
+                newAnswer.innerHTML = `
+              <label for="${newAnswerId}-choice">Answer ${
+                    answerList.childElementCount + 1
+                }</label>
+              <input
+                type="text"
+                name="${newAnswerId}-choice"
+                id="${newAnswerId}-input"
+                class="question-answer-input"
+                required
+             />`;
+                answerList.appendChild(newAnswer);
+            }
+        });
+    });
+
+    //GET question types
+
+    const fillQuestionTypes = (id) => {
+        fetch("/api/questionTypes")
+            .then((res) => {
+                return res.text();
+            })
+            .then((text) => {
+                document.querySelector(`#${id}-type`).innerHTML = text;
+            });
+    };
+
+    //survey POST request
+    const form = document.querySelector(".survey-form");
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        formData.append("userEmail", userCookieEmail);
+        const survey = {};
+        formData.forEach((value, key) => {
+            survey[key] = value;
+        });
+            fetch("/api/newSurvey", {
+                method: "POST",
+                body: JSON.stringify(survey),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }).then((res) => {
+                if (res.status === 200){
+                    document.location.href = "/index.html"
+                } else {
+                    document.getElementById("submitMsg").innerHTML = `<p>${res.message}<p>`;
+                }
+
+            })
+            document.getElementById("submitMsg").innerHTML = `<i>Survey added<i>`;
+    });
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+
+    function cookieUserLogin() {
+        if (userCookie !== "") {
+            loggedIn.innerHTML = `${userCookie}`;
+        }
+    }
+
+
+</script>
+</html>

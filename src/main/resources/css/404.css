@@ -1,0 +1,40 @@
+
+
+.body {
+    background-color: lightgrey;
+    position: relative;
+    height: 2000px;
+    width: 2000px;
+    display: flex;
+    justify-content: center;
+}
+
+h1 {
+    right: 50%;
+    position: absolute;
+    font-size: 100px;
+    color: red;
+}
+
+li {
+
+    position: absolute;
+    right: 10%;
+    top:20%;
+    font-size: 50px;
+    color: ghostwhite;
+    text-align: left;
+}
+
+ p {
+
+    position: absolute;
+     right: 10%;
+    top:10%;
+    font-size: 50px;
+    color: ghostwhite;
+}
+
+
+
+
